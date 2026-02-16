@@ -2,203 +2,184 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PROHELMET — Payment Confirmation</title>
-  <meta name="theme-color" content="#0f1115" />
-
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Payment Successful — ProHelmet</title>
   <style>
     :root{
-      --bg:#0f1115;
-      --card:#151922;
-      --text:#ffffff;
-      --muted:#9aa0a6;
-      --line:rgba(255,255,255,.10);
-      --success:#00c853;
-      --btn:#1f2633;
-      --btnHover:#263043;
+      --bg:#0b0f15;
+      --card:#141a24;
+      --card2:#101622;
+      --text:#e8edf6;
+      --muted:#a9b4c6;
+      --line:rgba(255,255,255,.08);
+      --accent:#22c55e;
     }
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      background:var(--bg);
+      background: radial-gradient(1200px 600px at 50% 0%, rgba(59,130,246,.10), transparent 60%),
+                  radial-gradient(900px 500px at 50% 100%, rgba(34,197,94,.08), transparent 55%),
+                  var(--bg);
       color:var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:16px;
+      padding:18px;
     }
-    .wrap{ width:100%; max-width:420px; }
+    .wrap{
+      width:min(420px, 100%);
+    }
     .card{
-      background:var(--card);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
       border:1px solid var(--line);
-      border-radius:18px;
+      border-radius:22px;
       padding:18px 18px 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
     }
-
-    /* Brand */
     .brand{
       display:flex;
-      justify-content:center;
       align-items:center;
-      margin-bottom:10px;
-      min-height:34px;
+      gap:10px;
+      margin-bottom:8px;
     }
     .brand img{
-      width:100%;
-      max-width:320px;
-      height:auto;
+      height:26px;
+      width:auto;
       display:block;
-      filter: drop-shadow(0 6px 18px rgba(0,0,0,.35));
     }
-    .brand-fallback{
-      display:none;
+    .tagline{
+      text-align:center;
       font-weight:900;
-      letter-spacing:.6px;
-      font-size:18px;
-      opacity:.95;
-      text-align:center;
-    }
-
-    .caption{
-      text-align:center;
-      font-weight:800;
+      font-size:26px;
       letter-spacing:.2px;
       margin:10px 0 14px;
-      font-size:18px;
     }
-    .divider{
+    .hr{
       height:1px;
       background:var(--line);
-      margin:14px 0;
+      margin:10px 0 16px;
     }
 
-    /* Success */
-    .ok{
+    .okRow{
       display:flex;
       align-items:center;
-      gap:12px;
       justify-content:center;
+      gap:14px;
       margin-top:4px;
     }
-    .check{
-      width:44px;
-      height:44px;
+    .okIcon{
+      width:56px;
+      height:56px;
       border-radius:999px;
-      background: rgba(0, 200, 83, .14);
-      border: 1px solid rgba(0, 200, 83, .40);
+      background: rgba(34,197,94,.12);
+      border:1px solid rgba(34,197,94,.35);
       display:flex;
       align-items:center;
       justify-content:center;
       flex:0 0 auto;
     }
-    .ok h1{ font-size:18px; margin:0; font-weight:900; }
+    .okIcon svg{display:block}
+    .okTitle{
+      font-size:24px;
+      font-weight:900;
+      margin:0;
+    }
     .sub{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:16px;
       text-align:center;
-      margin:10px 0 0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.35;
     }
-    .meta{
-      margin-top:10px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      align-items:center;
-      font-size:12px;
-      color:var(--muted);
-    }
+
     .pill{
+      margin:12px auto 0;
       display:inline-flex;
       align-items:center;
+      justify-content:center;
       gap:8px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      padding:8px 10px;
+      padding:10px 14px;
       border-radius:999px;
-      max-width:100%;
-    }
-    .pill b{ color:var(--text); font-weight:800; }
-    .pill .mono{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size:12px;
-      color:var(--text);
-      opacity:.95;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      max-width:280px;
-      display:inline-block;
-      vertical-align:bottom;
-    }
-
-    .status{
-      margin-top:14px;
-      text-align:center;
-      font-size:13px;
-      color:var(--text);
-      opacity:.95;
-    }
-
-    /* Support box */
-    .support{
-      margin-top:14px;
-      padding:12px 12px;
-      border-radius:14px;
+      background: rgba(255,255,255,.04);
       border:1px solid var(--line);
+      color:var(--text);
+      font-weight:800;
+      font-size:14px;
+    }
+    .pill b{font-weight:900}
+
+    .note{
+      margin-top:14px;
       background: rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
       color:var(--muted);
-      font-size:12.5px;
-      line-height:1.4;
+      line-height:1.45;
+      font-size:14.5px;
+    }
+    .note b{color:var(--text)}
+    .note p{margin:0}
+
+    /* WhatsApp 2-line block (centered) */
+    .wa-block{
+      margin-top:12px;
       text-align:center;
     }
-    .support b{ color:var(--text); }
-
-    /* Center line: Message us at WhatsApp: [icon] number */
-    .wa-line{
-      margin-top:10px;
+    .wa-title{
+      font-weight:900;
+      color:var(--text);
+      font-size:14px;
+      margin-bottom:6px;
+    }
+    .wa-number{
       display:flex;
       align-items:center;
       justify-content:center;
       gap:8px;
-      font-weight:600;
-      color:var(--text);
+      font-weight:900;
       font-size:14px;
-      text-align:center;
     }
-    .wa-line a{
+    .wa-number a{
       color:var(--text);
       text-decoration:none;
-      font-weight:700;
+      font-weight:900;
     }
 
     .btn{
       margin-top:14px;
       width:100%;
-      display:inline-flex;
-      justify-content:center;
-      align-items:center;
-      gap:10px;
-      padding:12px 14px;
-      border-radius:14px;
+      padding:14px 16px;
+      border-radius:16px;
       border:1px solid var(--line);
-      background:var(--btn);
+      background: rgba(255,255,255,.06);
       color:var(--text);
+      font-weight:900;
+      font-size:18px;
       text-decoration:none;
-      font-weight:800;
-      letter-spacing:.2px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:52px;
     }
-    .btn:hover{ background:var(--btnHover); }
+    .btn:active{transform:translateY(1px)}
 
-    .tiny{
+    .footer{
+      margin-top:14px;
       text-align:center;
-      color:var(--muted);
-      font-size:11px;
-      margin-top:10px;
-      opacity:.85;
+      color:rgba(255,255,255,.45);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.4px;
+    }
+
+    /* Fit mobile well */
+    @media (max-width:360px){
+      .tagline{font-size:22px}
+      .okTitle{font-size:20px}
+      .sub{font-size:14px}
+      .btn{font-size:16px}
     }
   </style>
 </head>
@@ -206,61 +187,60 @@
 <body>
   <div class="wrap">
     <div class="card">
-
-      <!-- SECTION 1: Brand -->
-      <div class="brand">
-        <img id="brandImg" src="./brand_header.png" alt="PROHELMET" />
-        <div id="brandFallback" class="brand-fallback">PROHELMET</div>
+      <!-- Section 1: Brand Authority -->
+      <div class="brand" aria-label="ProHelmet brand">
+        <img src="brand_header.png" alt="PROHELMET" />
       </div>
-      <div class="caption">Stay Safe. Stay Fresh.</div>
 
-      <div class="divider"></div>
+      <div class="tagline">Stay Safe. Stay Fresh.</div>
+      <div class="hr"></div>
 
-      <!-- SECTION 2: Trust Anchor -->
-      <div class="ok">
-        <div class="check" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M20 6L9 17l-5-5" stroke="#00c853" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Section 2: Visual Trust Anchor -->
+      <div class="okRow">
+        <div class="okIcon" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24">
+            <path fill="#22c55e" d="M9.0 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/>
           </svg>
         </div>
-        <h1>Payment Successful</h1>
+        <h2 class="okTitle">Payment Successful</h2>
       </div>
 
-      <p class="sub"><span id="amtText">₹49.00</span> received securely.</p>
+      <p class="sub"><span id="amtText">₹—</span> received securely.</p>
 
-      <div class="meta">
-        <div class="pill" title="Transaction ID">
-          <b>Txn ID:</b>
-          <span class="mono" id="txn_id">—</span>
+      <div class="pill">
+        <span>Txn ID:</span>
+        <b id="txnText">—</b>
+      </div>
+
+      <p class="sub" style="margin-top:12px;">Your helmet is now in the sanitization cycle.</p>
+
+      <!-- Assurance -->
+      <div class="note">
+        <p>
+          If you encounter any issues with <b>payment</b> or the <b>cleaning cycle</b>, don’t worry —
+          please <b>reachout</b> to us with your payment screenshot and we will assist you on priority.
+        </p>
+
+        <div class="wa-block">
+          <div class="wa-title">Message us at WhatsApp:</div>
+          <div class="wa-number">
+            <!-- WhatsApp icon -->
+            <svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+              <path fill="#25D366" d="M16 3C8.8 3 3 8.7 3 15.8c0 2.7.9 5.2 2.3 7.3L4 29l6-1.6c2 1.1 4.3 1.8 6.9 1.8 7.2 0 13-5.7 13-12.8C29.9 8.7 24.1 3 16 3z"/>
+              <path fill="#0f1115" d="M13.4 10.5c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.4-.3.3-1 1-1 2.4s1 2.8 1.1 3 .2.5.5.9c.3.4 1.3 2.1 3.3 2.9 1.6.7 2 .6 2.4.6.4 0 1.3-.5 1.5-1 .2-.5.2-.9.1-1-.1-.1-.2-.2-.4-.3l-1.4-.7c-.2-.1-.4-.1-.6.1-.2.2-.7.9-.9 1-.2.1-.3.2-.6.1-.3-.1-1.1-.4-2-.9-.7-.4-1.2-1.1-1.4-1.3-.1-.2 0-.4.1-.5l.4-.5c.1-.2.2-.3.3-.5.1-.2.1-.4 0-.6l-.6-1.5z"/>
+            </svg>
+
+            <a id="waLink" href="#" target="_blank" rel="noopener">7207400693</a>
+          </div>
         </div>
       </div>
 
-      <div class="status">Your helmet is now in the sanitization cycle.</div>
-
-      <!-- Generic assurance -->
-      <div class="support">
-        If you encounter any issues with <b>payment</b> or the <b>cleaning cycle</b>, don’t worry —
-        please <b>reachout</b> to us with your payment screenshot and we will assist you on priority.
-
-        <div class="wa-line">
-          <span>Message us at WhatsApp:</span>
-
-          <!-- WhatsApp icon -->
-          <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true">
-            <path fill="#25D366" d="M16 3C8.8 3 3 8.7 3 15.8c0 2.7.9 5.2 2.3 7.3L4 29l6-1.6c2 1.1 4.3 1.8 6.9 1.8 7.2 0 13-5.7 13-12.8C29.9 8.7 24.1 3 16 3z"/>
-            <path fill="#0f1115" d="M13.4 10.5c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.4-.3.3-1 1-1 2.4s1 2.8 1.1 3 .2.5.5.9c.3.4 1.3 2.1 3.3 2.9 1.6.7 2 .6 2.4.6.4 0 1.3-.5 1.5-1 .2-.5.2-.9.1-1-.1-.1-.2-.2-.4-.3l-1.4-.7c-.2-.1-.4-.1-.6.1-.2.2-.7.9-.9 1-.2.1-.3.2-.6.1-.3-.1-1.1-.4-2-.9-.7-.4-1.2-1.1-1.4-1.3-.1-.2 0-.4.1-.5l.4-.5c.1-.2.2-.3.3-.5.1-.2.1-.4 0-.6l-.6-1.5z"/>
-          </svg>
-
-          <a id="waLink" href="#" target="_blank" rel="noopener">7207400693</a>
-        </div>
-      </div>
-
+      <!-- Website link (no auto redirect) -->
       <a class="btn" href="https://prohelmet0210.github.io/prohelmet/" target="_blank" rel="noopener">
         Visit Official Website
       </a>
 
-      <!-- Footer (only this) -->
-      <div class="tiny">©PROHELMET</div>
+      <div class="footer">©PROHELMET</div>
     </div>
   </div>
 
@@ -268,39 +248,46 @@
     (function(){
       const params = new URLSearchParams(window.location.search);
 
-      // Txn ID
-      const txn = (params.get("txn") || "").trim();
-      const txnEl = document.getElementById("txn_id");
+      // Txn ID: supports txn=... or payment_id=...
+      const txn = (params.get("txn") || params.get("payment_id") || "").trim();
+      const txnEl = document.getElementById("txnText");
       if (txnEl) txnEl.textContent = txn ? txn : "—";
 
-      // Amount (amt can be "49" or "49.00" or "49.99")
-      const amtRaw = (params.get("amt") || "").trim();
+      // Amount: supports amt=49.00 or amount_paise=4900
       const amtEl = document.getElementById("amtText");
-      function formatAmount(v){
-        const n = Number(v);
-        if (!Number.isFinite(n)) return "₹49.00";
-        return "₹" + n.toFixed(2);
-      }
-      if (amtEl) amtEl.textContent = formatAmount(amtRaw || "49");
 
-      // WhatsApp link
-      const wa = "7207400693";
+      function setAmtFromPaise(paiseStr){
+        const p = Number(paiseStr);
+        if (!Number.isFinite(p)) return false;
+        if (amtEl) amtEl.textContent = "₹" + (p/100).toFixed(2);
+        return true;
+      }
+
+      function setAmtFromRupees(rupeesStr){
+        const r = Number(rupeesStr);
+        if (!Number.isFinite(r)) return false;
+        if (amtEl) amtEl.textContent = "₹" + r.toFixed(2);
+        return true;
+      }
+
+      let ok = false;
+      ok = ok || setAmtFromPaise((params.get("amount_paise") || "").trim());
+      ok = ok || setAmtFromRupees((params.get("amt") || "").trim());
+      if (!ok && amtEl) amtEl.textContent = "₹—";
+
+      // WhatsApp deep link with prefilled message (includes txn if present)
+      const waNum = "7207400693";
+      const waMsg = txn
+        ? ("Hi ProHelmet, I need help. Transaction ID: " + txn)
+        : "Hi ProHelmet, I need help with my payment/cleaning cycle.";
+      const waUrl = "https://wa.me/91" + waNum + "?text=" + encodeURIComponent(waMsg);
       const waLink = document.getElementById("waLink");
-      if (waLink) waLink.href = "https://wa.me/91" + wa;
-
-      // Brand image fallback if not found
-      const img = document.getElementById("brandImg");
-      const fb  = document.getElementById("brandFallback");
-      if (img) {
-        img.addEventListener("error", function(){
-          img.style.display = "none";
-          if (fb) fb.style.display = "block";
-        });
-      }
+      if (waLink) waLink.href = waUrl;
     })();
   </script>
 </body>
 </html>
+
 
 
 
