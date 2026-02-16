@@ -1,27 +1,250 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Thank You</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PROHELMET — Payment Confirmation</title>
+  <meta name="theme-color" content="#0f1115" />
+
   <style>
-    body {
-      margin: 0;
-      background-color: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      width: 100vw;
-      overflow: hidden; /* prevent scrollbars */
+    :root{
+      --bg:#0f1115;
+      --card:#151922;
+      --text:#ffffff;
+      --muted:#9aa0a6;
+      --line:rgba(255,255,255,.10);
+      --success:#00c853;
+      --btn:#1f2633;
+      --btnHover:#263043;
     }
-    img {
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover; /* fills screen, keeps proportions */
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+    .wrap{
+      width:100%;
+      max-width:420px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px 18px 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .brand{
+      display:flex;
+      justify-content:center;
+      margin-bottom:10px;
+    }
+    .brand img{
+      width:100%;
+      max-width:320px;
+      height:auto;
+      display:block;
+      filter: drop-shadow(0 6px 18px rgba(0,0,0,.35));
+    }
+    .caption{
+      text-align:center;
+      font-weight:800;
+      letter-spacing:.2px;
+      margin:10px 0 14px;
+      font-size:18px;
+    }
+
+    .divider{
+      height:1px;
+      background:var(--line);
+      margin:14px 0;
+    }
+
+    .ok{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      justify-content:center;
+      margin-top:4px;
+    }
+    .check{
+      width:44px;
+      height:44px;
+      border-radius:999px;
+      background: rgba(0, 200, 83, .14);
+      border: 1px solid rgba(0, 200, 83, .40);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+    }
+    .check svg{ display:block; }
+    .ok h1{
+      font-size:18px;
+      margin:0;
+      font-weight:900;
+    }
+    .sub{
+      text-align:center;
+      margin:10px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+    .meta{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      align-items:center;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      padding:8px 10px;
+      border-radius:999px;
+      max-width:100%;
+    }
+    .pill b{
+      color:var(--text);
+      font-weight:800;
+    }
+    .pill .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px;
+      color:var(--text);
+      opacity:.95;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width:280px;
+      display:inline-block;
+      vertical-align:bottom;
+    }
+
+    .status{
+      margin-top:14px;
+      text-align:center;
+      font-size:13px;
+      color:var(--text);
+      opacity:.95;
+    }
+
+    .support{
+      margin-top:14px;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color:var(--muted);
+      font-size:12.5px;
+      line-height:1.4;
+    }
+    .support b{ color:var(--text); }
+
+    .btn{
+      margin-top:14px;
+      width:100%;
+      display:inline-flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:var(--btn);
+      color:var(--text);
+      text-decoration:none;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .btn:hover{ background:var(--btnHover); }
+    .tiny{
+      text-align:center;
+      color:var(--muted);
+      font-size:11px;
+      margin-top:10px;
+      opacity:.85;
     }
   </style>
 </head>
+
 <body>
-  <img src="Thankyou.gif" alt="Thank You">
+  <div class="wrap">
+    <div class="card">
+
+      <!-- SECTION 1: Brand -->
+      <div class="brand">
+        <img src="brand_header123.png" alt="PROHELMET" />
+      </div>
+      <div class="caption">Stay Safe. Stay Fresh.</div>
+
+      <div class="divider"></div>
+
+      <!-- SECTION 2: Trust Anchor -->
+      <div class="ok">
+        <div class="check" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M20 6L9 17l-5-5" stroke="#00c853" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h1>Payment Successful</h1>
+      </div>
+
+      <p class="sub">₹49.00 received securely.</p>
+
+      <div class="meta">
+        <div class="pill" title="Transaction ID">
+          <b>Txn ID:</b>
+          <span class="mono" id="txn_id">—</span>
+        </div>
+      </div>
+
+      <!-- SECTION 3: Service reassurance -->
+      <div class="status">Your helmet is now in the sanitization cycle.</div>
+
+      <!-- Generic assurance -->
+      <div class="support">
+        If you encounter any issues with <b>payment</b> or the <b>cleaning cycle</b>, don’t worry —
+        please message us on WhatsApp with your payment screenshot and we will assist you on priority.<br><br>
+        <b>WhatsApp:</b> <span id="wa_num">7207400693</span>
+      </div>
+
+      <!-- SECTION 4: Link -->
+      <a class="btn" href="https://prohelmet0210.github.io/prohelmet/" target="_blank" rel="noopener">
+        Visit Official Website
+      </a>
+
+      <div class="tiny">PROHELMET — Clean Ride. Clear Mind. Confident You.</div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const params = new URLSearchParams(window.location.search);
+      const txn = (params.get("txn") || "").trim();
+      const el = document.getElementById("txn_id");
+      if (el) el.textContent = txn ? txn : "—";
+
+      // Optional: make WhatsApp number clickable (kept subtle)
+      const wa = "7207400693";
+      const waEl = document.getElementById("wa_num");
+      if (waEl) {
+        waEl.innerHTML = `<a href="https://wa.me/91${wa}" target="_blank" rel="noopener" style="color:#ffffff; text-decoration:none; font-weight:800;">${wa}</a>`;
+      }
+    })();
+  </script>
 </body>
 </html>
