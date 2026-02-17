@@ -192,7 +192,7 @@
       </div>
 
       <div class="title">Payment Successful</div>
-      <div class="sub"><strong id="amtText">₹49</strong> received securely.</div>
+      <div class="sub">Payment received securely.</div>
 
       <div class="pill">
         <span>Txn ID:</span>
@@ -235,45 +235,19 @@
   }
 
   /* ----------------------------
-     1) AMOUNT
-     - Recommended: pass ?amt=19.99 in your redirect URL
-     - Also supports: amount=, price=
-     - If digits-only and >=100, treats as paise and converts to rupees
-     - If missing, shows ₹—
-     ---------------------------- */
-  let amount = getParam(["amt", "amount", "price"]);
-
-  if (amount && /^[0-9]+$/.test(amount)) {
-    const n = Number(amount);
-    if (Number.isFinite(n) && n >= 100) {
-      amount = (n / 100).toFixed(2);
-    }
-  }
-
-  if (!amount) amount = "—";
-
-  /* ----------------------------
-     2) TXN ID
-     - Prefers Razorpay payment link id (plink_...)
-     - Falls back to pay_... if link id missing
+     TXN ID (Razorpay redirect)
      ---------------------------- */
   const txnId = getParam([
     "razorpay_payment_link_id",   // plink_...
-    "plink",                      // legacy
-    "razorpay_payment_id"         // pay_... fallback
+    "plink",
+    "razorpay_payment_id"
   ]) || "—";
 
-  /* ----------------------------
-     3) UPDATE UI
-     ---------------------------- */
-  const amtEl = document.getElementById("amtText");
   const txnEl = document.getElementById("txnText");
-
-  if (amtEl) amtEl.textContent = (amount === "—") ? "₹—" : `₹${amount}`;
   if (txnEl) txnEl.textContent = txnId;
 
   /* ----------------------------
-     4) UPDATE WHATSAPP LINK
+     Update WhatsApp link
      ---------------------------- */
   const waLink = document.getElementById("waLink");
   if (waLink) {
@@ -286,5 +260,6 @@
 
 })();
 </script>
+
 
 
