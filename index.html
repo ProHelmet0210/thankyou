@@ -293,33 +293,22 @@
 
     function formatAmount(v) {
       if (!v) return "";
-      // If purely digits, treat as paise if >= 100
       if (/^[0-9]+$/.test(v)) {
         const n = Number(v);
         if (Number.isFinite(n) && n >= 100) return (n / 100).toFixed(2); // paise -> rupees
         return String(n);
       }
-      // Already formatted like "49" or "49.00"
       return v;
     }
 
-    /* ----------------------------
-       TXN ID
-       ---------------------------- */
+    // Txn ID
     const txnId = getParam([
-      "razorpay_payment_link_id",   // plink_...
+      "razorpay_payment_link_id",
       "plink",
-      "razorpay_payment_id"         // fallback
+      "razorpay_payment_id"
     ]) || "—";
 
-    /* ----------------------------
-       AMOUNT
-       Priority:
-       1) explicit amt/amount/price in URL
-       2) Razorpay amount keys (if ever present)
-       3) fallback: parse from reference_id ONLY if you embed amount like "prohelmet-49-<anything>"
-          (This will NOT guess from your timestamp-style reference ids.)
-       ---------------------------- */
+    // Amount: ONLY from explicit amount params (NO reference-id parsing)
     let amount = getParam([
       "amt", "amount", "price",
       "razorpay_payment_link_amount",
@@ -327,29 +316,17 @@
       "razorpay_payment_link_amount_due"
     ]);
 
-    // Fallback: parse amount from reference id only if pattern matches prohelmet-<amount>-...
-    if (!amount) {
-      const ref = getParam(["razorpay_payment_link_reference_id"]);
-      // Accept: prohelmet-49-xxxx or prohelmet-49.00-xxxx or prohelmet-4900p-xxxx (you control this)
-      const m = ref.match(/^prohelmet-([0-9]+(?:\.[0-9]{1,2})?)(?:-|$)/i);
-      if (m && m[1]) amount = m[1];
-    }
-
     amount = formatAmount(amount);
     if (!amount) amount = "—";
 
-    /* ----------------------------
-       UPDATE UI
-       ---------------------------- */
+    // Update UI
     const amtEl = document.getElementById("amtText");
     const txnEl = document.getElementById("txnText");
 
     if (amtEl) amtEl.textContent = (amount === "—") ? "₹—" : `₹${amount}`;
     if (txnEl) txnEl.textContent = txnId;
 
-    /* ----------------------------
-       UPDATE WHATSAPP LINK
-       ---------------------------- */
+    // WhatsApp link
     const waLink = document.getElementById("waLink");
     if (waLink) {
       const base = "https://wa.me/917207400693?text=";
