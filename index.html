@@ -221,30 +221,70 @@
     </div>
   </div>
 
-  <script>
-  (function () {
+<script>
+(function () {
 
-    const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(window.location.search);
 
-    function getParam(keys) {
-      for (const key of keys) {
-        const value = (params.get(key) || "").trim();
-        if (value) return value;
-      }
-      return "";
+  function getParam(keys) {
+    for (const key of keys) {
+      const value = (params.get(key) || "").trim();
+      if (value) return value;
     }
+    return "";
+  }
 
-    const txnId = getParam([
-      "razorpay_payment_link_id",
-      "plink",
-      "razorpay_payment_id"
-    ]) || "—";
+  /* ----------------------------
+     1) AMOUNT
+     - Recommended: pass ?amt=19.99 in your redirect URL
+     - Also supports: amount=, price=
+     - If digits-only and >=100, treats as paise and converts to rupees
+     - If missing, shows ₹—
+     ---------------------------- */
+  let amount = getParam(["amt", "amount", "price"]);
 
-    document.getElementById("txnText").textContent = txnId;
+  if (amount && /^[0-9]+$/.test(amount)) {
+    const n = Number(amount);
+    if (Number.isFinite(n) && n >= 100) {
+      amount = (n / 100).toFixed(2);
+    }
+  }
 
-  })();
-  </script>
+  if (!amount) amount = "—";
 
-</body>
-</html>
+  /* ----------------------------
+     2) TXN ID
+     - Prefers Razorpay payment link id (plink_...)
+     - Falls back to pay_... if link id missing
+     ---------------------------- */
+  const txnId = getParam([
+    "razorpay_payment_link_id",   // plink_...
+    "plink",                      // legacy
+    "razorpay_payment_id"         // pay_... fallback
+  ]) || "—";
+
+  /* ----------------------------
+     3) UPDATE UI
+     ---------------------------- */
+  const amtEl = document.getElementById("amtText");
+  const txnEl = document.getElementById("txnText");
+
+  if (amtEl) amtEl.textContent = (amount === "—") ? "₹—" : `₹${amount}`;
+  if (txnEl) txnEl.textContent = txnId;
+
+  /* ----------------------------
+     4) UPDATE WHATSAPP LINK
+     ---------------------------- */
+  const waLink = document.getElementById("waLink");
+  if (waLink) {
+    const base = "https://wa.me/917207400693?text=";
+    const msg = txnId === "—"
+      ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
+      : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txnId}`;
+    waLink.href = base + encodeURIComponent(msg);
+  }
+
+})();
+</script>
+
 
