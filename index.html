@@ -7,8 +7,6 @@
   <style>
     :root{
       --bg:#070a10;
-      --card:#0f1420;
-      --card2:#0d121b;
       --text:#e9eef7;
       --muted:#a9b4c6;
       --line:rgba(255,255,255,.10);
@@ -94,7 +92,6 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      gap:14px;
       margin-top:6px;
       text-align:center;
     }
@@ -107,7 +104,6 @@
       justify-content:center;
       background: rgba(34,197,94,.12);
       border:1px solid rgba(34,197,94,.28);
-      flex: 0 0 auto;
     }
     .check svg{width:34px;height:34px; fill: var(--ok);}
 
@@ -283,48 +279,87 @@
   </div>
 
   <script>
-    (function () {
-      const p = new URLSearchParams(window.location.search);
+  (function () {
 
-      function firstParam(keys) {
-        for (const k of keys) {
-          const v = (p.get(k) || "").trim();
-          if (v) return v;
-        }
-        return "";
+    const params = new URLSearchParams(window.location.search);
+
+    function getParam(keys) {
+      for (const key of keys) {
+        const value = (params.get(key) || "").trim();
+        if (value) return value;
       }
+      return "";
+    }
 
-      // Amount: only if explicitly provided (GitHub Pages cannot securely fetch amount)
-      let amt = firstParam(["amt","amount","price"]);
-
-      // If amount came as paise, convert to rupees
-      if (amt && /^[0-9]+$/.test(amt)) {
-        const n = Number(amt);
-        if (Number.isFinite(n) && n >= 100) amt = (n/100).toFixed(2);
+    function formatAmount(v) {
+      if (!v) return "";
+      // If purely digits, treat as paise if >= 100
+      if (/^[0-9]+$/.test(v)) {
+        const n = Number(v);
+        if (Number.isFinite(n) && n >= 100) return (n / 100).toFixed(2); // paise -> rupees
+        return String(n);
       }
-      if (!amt) amt = "—";
+      // Already formatted like "49" or "49.00"
+      return v;
+    }
 
-      // Txn: support Razorpay default params
-      const txn =
-        firstParam([
-          "razorpay_payment_link_id",   // plink_...
-          "plink",                      // your old param
-          "razorpay_payment_id"         // pay_... (fallback only)
-        ]) || "—";
+    /* ----------------------------
+       TXN ID
+       ---------------------------- */
+    const txnId = getParam([
+      "razorpay_payment_link_id",   // plink_...
+      "plink",
+      "razorpay_payment_id"         // fallback
+    ]) || "—";
 
-      document.getElementById("amtText").textContent = (amt === "—") ? "₹—" : `₹${amt}`;
-      document.getElementById("txnText").textContent = txn;
+    /* ----------------------------
+       AMOUNT
+       Priority:
+       1) explicit amt/amount/price in URL
+       2) Razorpay amount keys (if ever present)
+       3) fallback: parse from reference_id ONLY if you embed amount like "prohelmet-49-<anything>"
+          (This will NOT guess from your timestamp-style reference ids.)
+       ---------------------------- */
+    let amount = getParam([
+      "amt", "amount", "price",
+      "razorpay_payment_link_amount",
+      "razorpay_payment_link_amount_paid",
+      "razorpay_payment_link_amount_due"
+    ]);
 
-      // Update WhatsApp link to include Txn (if available)
-      const wa = document.getElementById("waLink");
-      if (wa) {
-        const base = "https://wa.me/917207400693?text=";
-        const msg = txn === "—"
-          ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
-          : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txn}`;
-        wa.href = base + encodeURIComponent(msg);
-      }
-    })();
+    // Fallback: parse amount from reference id only if pattern matches prohelmet-<amount>-...
+    if (!amount) {
+      const ref = getParam(["razorpay_payment_link_reference_id"]);
+      // Accept: prohelmet-49-xxxx or prohelmet-49.00-xxxx or prohelmet-4900p-xxxx (you control this)
+      const m = ref.match(/^prohelmet-([0-9]+(?:\.[0-9]{1,2})?)(?:-|$)/i);
+      if (m && m[1]) amount = m[1];
+    }
+
+    amount = formatAmount(amount);
+    if (!amount) amount = "—";
+
+    /* ----------------------------
+       UPDATE UI
+       ---------------------------- */
+    const amtEl = document.getElementById("amtText");
+    const txnEl = document.getElementById("txnText");
+
+    if (amtEl) amtEl.textContent = (amount === "—") ? "₹—" : `₹${amount}`;
+    if (txnEl) txnEl.textContent = txnId;
+
+    /* ----------------------------
+       UPDATE WHATSAPP LINK
+       ---------------------------- */
+    const waLink = document.getElementById("waLink");
+    if (waLink) {
+      const base = "https://wa.me/917207400693?text=";
+      const msg = txnId === "—"
+        ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
+        : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txnId}`;
+      waLink.href = base + encodeURIComponent(msg);
+    }
+
+  })();
   </script>
 </body>
 </html>
