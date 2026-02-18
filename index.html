@@ -381,7 +381,7 @@ const feedbackSubmit = document.getElementById("feedbackSubmit");
 const ratingValueEl = document.getElementById("ratingValue");
 
 // TEMP placeholder (Apps Script URL will come later)
-const APPS_SCRIPT_URL = ""; // we will fill this later
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbFuKtGwD8R4mTCapsVlEvvYzim_uhmYhAmbblifHXM8EvNC70z5P5HFL9vikeom4W/exec";
 
 function getKioskIdFromUrl() {
   const v = (params.get("kiosk") || "").trim();
@@ -405,11 +405,18 @@ function sendFeedbackEvent({ rating, feedback }) {
     feedback: feedback || ""
   };
 
+  const body = new URLSearchParams();
+  body.set("txn_id", payload.txn_id);
+  body.set("kiosk_id", payload.kiosk_id);
+  body.set("rating", String(payload.rating || ""));
+  body.set("feedback", payload.feedback || "");
+
   fetch(APPS_SCRIPT_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+    mode: "no-cors",
+    body
   }).catch(() => {});
+
 }
 
 stars.forEach(star => {
