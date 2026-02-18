@@ -372,7 +372,8 @@
 /* ----------------------------
    FEEDBACK STAR INTERACTION
 ----------------------------- */
-
+const params = new URLSearchParams(window.location.search);
+  
 let selectedRating = 0;
 
 const stars = document.querySelectorAll(".star");
@@ -387,6 +388,8 @@ function getKioskIdFromUrl() {
   const v = (params.get("kiosk") || "").trim();
   return v || "UNKNOWN";
 }
+
+const txnId = (document.getElementById("txnText")?.textContent || "—").trim();
 
 function sendFeedbackEvent({ rating, feedback }) {
   // Until Apps Script is ready, just log safely
