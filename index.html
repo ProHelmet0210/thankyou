@@ -162,6 +162,65 @@
   text-decoration:underline;
 }
 
+.feedback-card{
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:16px;
+  text-align:center;
+}
+
+.feedback-title{
+  font-weight:900;
+  margin-bottom:4px;
+}
+
+.feedback-sub{
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:12px;
+}
+
+.stars{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  font-size:28px;
+  cursor:pointer;
+}
+
+.star{
+  color:#555;
+  transition:color .2s ease;
+}
+
+.star.active{
+  color:#facc15;
+}
+
+.feedback-text{
+  width:100%;
+  margin-top:12px;
+  padding:10px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.4);
+  color:var(--text);
+  resize:none;
+}
+
+.feedback-submit{
+  margin-top:10px;
+  padding:10px 16px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.08);
+  color:var(--text);
+  font-weight:800;
+  cursor:pointer;
+}
+
     .btn{
       display:block;
       text-align:center;
@@ -225,6 +284,38 @@
        7207400693
     </a>
   </div>
+</div>
+
+      <!-- Feedback Section -->
+<div class="feedback-card" id="feedbackCard">
+
+  <div class="feedback-title">
+    We are new. Help us improve.
+  </div>
+
+  <div class="feedback-sub">
+    Kindly give your words of encouragement.
+  </div>
+
+  <div class="stars" id="starContainer">
+    <span class="star" data-value="1">★</span>
+    <span class="star" data-value="2">★</span>
+    <span class="star" data-value="3">★</span>
+    <span class="star" data-value="4">★</span>
+    <span class="star" data-value="5">★</span>
+  </div>
+
+  <textarea id="feedbackText"
+            class="feedback-text"
+            placeholder="Write your feedback..."
+            style="display:none;"></textarea>
+
+  <button id="feedbackSubmit"
+          class="feedback-submit"
+          style="display:none;">
+    Submit Feedback
+  </button>
+
 </div>
 
 <a class="btn" href="https://prohelmet0210.github.io/Website/" target="_blank">
