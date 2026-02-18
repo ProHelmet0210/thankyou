@@ -331,49 +331,54 @@
     </div>
   </div>
 <script>
-(function () {
+/* ----------------------------
+   SINGLE-SCOPE SCRIPT (NO IIFE)
+   ---------------------------- */
 
-  const params = new URLSearchParams(window.location.search);
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbFuKtGwD8R4mTCapsVlEvvYzim_uhmYhAmbblifHXM8EvNC70z5P5HFL9vikeom4W/exec";
 
-  function getParam(keys) {
-    for (const key of keys) {
-      const value = (params.get(key) || "").trim();
-      if (value) return value;
-    }
-    return "";
+const params = new URLSearchParams(window.location.search);
+
+function getParam(keys) {
+  for (const key of keys) {
+    const value = (params.get(key) || "").trim();
+    if (value) return value;
   }
-
-  /* ----------------------------
-     TXN ID (Razorpay redirect)
-     ---------------------------- */
-  const txnId = getParam([
-    "razorpay_payment_link_id",   // plink_...
-    "plink",
-    "razorpay_payment_id"
-  ]) || "—";
-
-  const txnEl = document.getElementById("txnText");
-  if (txnEl) txnEl.textContent = txnId;
-
-  /* ----------------------------
-     Update WhatsApp link
-     ---------------------------- */
-  const waLink = document.getElementById("waLink");
-  if (waLink) {
-    const base = "https://wa.me/917207400693?text=";
-    const msg = txnId === "—"
-      ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
-      : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txnId}`;
-    waLink.href = base + encodeURIComponent(msg);
-  }
-
-})();
+  return "";
+}
 
 /* ----------------------------
-   FEEDBACK STAR INTERACTION
------------------------------ */
-const params = new URLSearchParams(window.location.search);
-  
+   TXN + KIOSK (same scope)
+   ---------------------------- */
+const txnId = getParam([
+  "razorpay_payment_link_id",   // plink_...
+  "plink",
+  "razorpay_payment_id"
+]) || "—";
+
+const kioskId = (params.get("kiosk") || "").trim() || "UNKNOWN";
+
+/* ----------------------------
+   Render Txn ID
+   ---------------------------- */
+const txnEl = document.getElementById("txnText");
+if (txnEl) txnEl.textContent = txnId;
+
+/* ----------------------------
+   WhatsApp link with Txn
+   ---------------------------- */
+const waLink = document.getElementById("waLink");
+if (waLink) {
+  const base = "https://wa.me/917207400693?text=";
+  const msg = txnId === "—"
+    ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
+    : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txnId}`;
+  waLink.href = base + encodeURIComponent(msg);
+}
+
+/* ----------------------------
+   FEEDBACK
+   ---------------------------- */
 let selectedRating = 0;
 
 const stars = document.querySelectorAll(".star");
@@ -381,53 +386,32 @@ const feedbackText = document.getElementById("feedbackText");
 const feedbackSubmit = document.getElementById("feedbackSubmit");
 const ratingValueEl = document.getElementById("ratingValue");
 
-// TEMP placeholder (Apps Script URL will come later)
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbFuKtGwD8R4mTCapsVlEvvYzim_uhmYhAmbblifHXM8EvNC70z5P5HFL9vikeom4W/exec";
-
-function getKioskIdFromUrl() {
-  const v = (params.get("kiosk") || "").trim();
-  return v || "UNKNOWN";
-}
-
-const txnId = (document.getElementById("txnText")?.textContent || "—").trim();
-
-function sendFeedbackEvent({ rating, feedback }) {
-  // Until Apps Script is ready, just log safely
-  if (!APPS_SCRIPT_URL) {
-    console.log("FEEDBACK EVENT (not sent; Apps Script not configured):", {
-      txnId, kioskId: getKioskIdFromUrl(), rating, feedback
-    });
-    return;
-  }
-
-  // Later: POST to Apps Script (upsert by txnId)
-  const payload = {
-    txn_id: txnId,
-    kiosk_id: getKioskIdFromUrl(),
-    rating: rating,
-    feedback: feedback || ""
-  };
-
+function postToSheet({ rating, feedback }) {
   const body = new URLSearchParams();
-  body.set("txn_id", payload.txn_id);
-  body.set("kiosk_id", payload.kiosk_id);
-  body.set("rating", String(payload.rating || ""));
-  body.set("feedback", payload.feedback || "");
+  body.set("txn_id", txnId);
+  body.set("kiosk_id", kioskId);
+  body.set("rating", String(rating || ""));
+  body.set("feedback", (feedback || "").trim());
 
-  fetch(APPS_SCRIPT_URL, {
+  console.log("[PROHELMET FEEDBACK] POST", {
+    txn_id: txnId,
+    kiosk_id: kioskId,
+    rating: rating,
+    feedback: (feedback || "").trim()
+  });
+
+  return fetch(APPS_SCRIPT_URL, {
     method: "POST",
     mode: "no-cors",
     body
-  }).catch(() => {});
-
+  });
 }
 
 stars.forEach(star => {
   star.addEventListener("click", function () {
     selectedRating = parseInt(this.getAttribute("data-value"), 10) || 0;
 
-    
-    // highlight stars
+    // highlight
     stars.forEach(s => {
       const v = parseInt(s.getAttribute("data-value"), 10) || 0;
       s.classList.toggle("active", v <= selectedRating);
@@ -439,21 +423,15 @@ stars.forEach(star => {
     if (feedbackText) feedbackText.style.display = "block";
     if (feedbackSubmit) feedbackSubmit.style.display = "inline-block";
 
-    // AUTO-RECORD on star click (feedback blank)
-    sendFeedbackEvent({ rating: selectedRating, feedback: "" });
+    // AUTO-RECORD rating (feedback blank)
+    postToSheet({ rating: selectedRating, feedback: "" }).catch(() => {});
   });
 });
 
-// Submit (will record text + rating)
 if (feedbackSubmit) {
   feedbackSubmit.addEventListener("click", function () {
     const txt = (feedbackText ? feedbackText.value : "").trim();
-    sendFeedbackEvent({ rating: selectedRating || 0, feedback: txt });
-    // optional UI change later (e.g., "Thanks!" message) — we’ll do after backend is live
+    postToSheet({ rating: selectedRating || 0, feedback: txt }).catch(() => {});
   });
-}
-
+});
 </script>
-
-
-
