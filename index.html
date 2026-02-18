@@ -423,6 +423,8 @@ stars.forEach(star => {
   star.addEventListener("click", function () {
     selectedRating = parseInt(this.getAttribute("data-value"), 10) || 0;
 
+alert("Star clicked: " + selectedRating);
+    
     // highlight stars
     stars.forEach(s => {
       const v = parseInt(s.getAttribute("data-value"), 10) || 0;
