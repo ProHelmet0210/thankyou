@@ -286,6 +286,9 @@
   </div>
 </div>
 
+<input type="hidden" id="kioskId" value="">
+<input type="hidden" id="ratingValue" value="0">
+      
       <!-- Feedback Section -->
 <div class="feedback-card" id="feedbackCard">
 
@@ -366,7 +369,7 @@
 
 })();
 
-  /* ----------------------------
+/* ----------------------------
    FEEDBACK STAR INTERACTION
 ----------------------------- */
 
@@ -375,27 +378,69 @@ let selectedRating = 0;
 const stars = document.querySelectorAll(".star");
 const feedbackText = document.getElementById("feedbackText");
 const feedbackSubmit = document.getElementById("feedbackSubmit");
+const ratingValueEl = document.getElementById("ratingValue");
+
+// TEMP placeholder (Apps Script URL will come later)
+const APPS_SCRIPT_URL = ""; // we will fill this later
+
+function getKioskIdFromUrl() {
+  const v = (params.get("kiosk") || "").trim();
+  return v || "UNKNOWN";
+}
+
+function sendFeedbackEvent({ rating, feedback }) {
+  // Until Apps Script is ready, just log safely
+  if (!APPS_SCRIPT_URL) {
+    console.log("FEEDBACK EVENT (not sent; Apps Script not configured):", {
+      txnId, kioskId: getKioskIdFromUrl(), rating, feedback
+    });
+    return;
+  }
+
+  // Later: POST to Apps Script (upsert by txnId)
+  const payload = {
+    txn_id: txnId,
+    kiosk_id: getKioskIdFromUrl(),
+    rating: rating,
+    feedback: feedback || ""
+  };
+
+  fetch(APPS_SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  }).catch(() => {});
+}
 
 stars.forEach(star => {
   star.addEventListener("click", function () {
-
-    selectedRating = parseInt(this.getAttribute("data-value"));
+    selectedRating = parseInt(this.getAttribute("data-value"), 10) || 0;
 
     // highlight stars
     stars.forEach(s => {
-      s.classList.remove("active");
-      if (parseInt(s.getAttribute("data-value")) <= selectedRating) {
-        s.classList.add("active");
-      }
+      const v = parseInt(s.getAttribute("data-value"), 10) || 0;
+      s.classList.toggle("active", v <= selectedRating);
     });
+
+    if (ratingValueEl) ratingValueEl.value = String(selectedRating);
 
     // show textarea + submit
     if (feedbackText) feedbackText.style.display = "block";
     if (feedbackSubmit) feedbackSubmit.style.display = "inline-block";
 
-    console.log("Rating selected:", selectedRating); // for testing
+    // AUTO-RECORD on star click (feedback blank)
+    sendFeedbackEvent({ rating: selectedRating, feedback: "" });
   });
 });
+
+// Submit (will record text + rating)
+if (feedbackSubmit) {
+  feedbackSubmit.addEventListener("click", function () {
+    const txt = (feedbackText ? feedbackText.value : "").trim();
+    sendFeedbackEvent({ rating: selectedRating || 0, feedback: txt });
+    // optional UI change later (e.g., "Thanks!" message) — we’ll do after backend is live
+  });
+}
 
 </script>
 
