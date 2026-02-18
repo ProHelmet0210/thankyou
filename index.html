@@ -365,6 +365,38 @@
   }
 
 })();
+
+  /* ----------------------------
+   FEEDBACK STAR INTERACTION
+----------------------------- */
+
+let selectedRating = 0;
+
+const stars = document.querySelectorAll(".star");
+const feedbackText = document.getElementById("feedbackText");
+const feedbackSubmit = document.getElementById("feedbackSubmit");
+
+stars.forEach(star => {
+  star.addEventListener("click", function () {
+
+    selectedRating = parseInt(this.getAttribute("data-value"));
+
+    // highlight stars
+    stars.forEach(s => {
+      s.classList.remove("active");
+      if (parseInt(s.getAttribute("data-value")) <= selectedRating) {
+        s.classList.add("active");
+      }
+    });
+
+    // show textarea + submit
+    if (feedbackText) feedbackText.style.display = "block";
+    if (feedbackSubmit) feedbackSubmit.style.display = "inline-block";
+
+    console.log("Rating selected:", selectedRating); // for testing
+  });
+});
+
 </script>
 
 
