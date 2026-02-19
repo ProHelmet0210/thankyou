@@ -128,13 +128,27 @@
     .wa-link:hover{ text-decoration:underline; }
 
     .feedback-card{
-      background:rgba(255,255,255,.04);
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:16px;
-      margin-bottom:16px;
-      text-align:center;
-    }
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:16px;
+  text-align:center;
+
+  /* CLICK FIX */
+  position:relative;
+  z-index:5;
+}
+
+.feedback-text{
+  position:relative;
+  z-index:10;
+}
+
+.feedback-submit{
+  position:relative;
+  z-index:10;
+}
 
     .feedback-title{ font-weight:900; margin-bottom:4px; }
 
@@ -351,7 +365,7 @@ stars.forEach(star => {
     });
 
     feedbackText.style.display = "block";
-    feedbackSubmit.style.display = "inline-block";
+    feedbackSubmit.style.display = "block";
 
     sendToSheet(selectedRating, "");
   });
