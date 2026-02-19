@@ -294,7 +294,7 @@
      - Sends POST to Apps Script (no-cors)
      ---------------------------- */
 
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwA0S5afBBlwPtg3rD2l3zfIH0vcFwc3Po1PfQiKomD8VIfq-M8Nd7tgvnNdpb_kS_q/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzT9XOLIxeCHfxbhr-sty_GiYXlRfPc_h4u5MM1YV93p0fPkd0Y7qHbI_Q3ckDgK3w/exec";
   const params = new URLSearchParams(window.location.search);
 
   function getParam(keys) {
@@ -336,20 +336,20 @@
     const feedbackSubmit = document.getElementById("feedbackSubmit");
     const ratingValueEl = document.getElementById("ratingValue");
 
-    function postToSheet({ rating, feedback }) {
-      const body = new URLSearchParams();
-      body.set("txn_id", txnId);
-      body.set("kiosk_id", kioskId);
-      body.set("rating", String(rating || ""));
-      body.set("feedback", (feedback || "").trim());
+function postToSheet({ rating, feedback }) {
+  const qs = new URLSearchParams();
+  qs.set("txn_id", txnId);
+  qs.set("kiosk_id", kioskId);
+  qs.set("rating", String(rating || ""));
+  qs.set("feedback", (feedback || "").trim());
 
-      // proof log (console)
-      console.log("[PROHELMET FEEDBACK] POST", {
-        txn_id: txnId,
-        kiosk_id: kioskId,
-        rating: rating,
-        feedback: (feedback || "").trim()
-      });
+  const url = APPS_SCRIPT_URL + "?" + qs.toString() + "&_ts=" + Date.now();
+
+  console.log("[PROHELMET FEEDBACK] BEACON", url);
+
+  const img = new Image();
+  img.src = url;
+}
 
       return fetch(APPS_SCRIPT_URL, {
         method: "POST",
