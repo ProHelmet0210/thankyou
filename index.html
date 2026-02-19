@@ -42,6 +42,7 @@
       border-radius:var(--radius);
       box-shadow:var(--shadow);
       padding:14px;
+      position:relative;
     }
 
     .brand{ text-align:center; margin-bottom:8px; }
@@ -127,6 +128,9 @@
     .wa-link{ color:#25D366; text-decoration:none; font-weight:900; }
     .wa-link:hover{ text-decoration:underline; }
 
+    /* ---------------------------
+       CRITICAL CLICK FIXES
+       --------------------------- */
     .feedback-card{
       background:rgba(255,255,255,.04);
       border:1px solid var(--line);
@@ -134,10 +138,13 @@
       padding:16px;
       margin-bottom:16px;
       text-align:center;
+
+      position:relative;
+      z-index:9999;           /* keep above everything */
+      pointer-events:auto;
     }
 
     .feedback-title{ font-weight:900; margin-bottom:4px; }
-
     .feedback-sub{
       font-size:13px;
       color:var(--muted);
@@ -149,6 +156,10 @@
       justify-content:center;
       gap:8px;
       font-size:28px;
+
+      position:relative;
+      z-index:10000;
+      pointer-events:auto;
     }
 
     .star{
@@ -158,6 +169,10 @@
       -webkit-tap-highlight-color: transparent;
       color:#555;
       transition:color .2s ease;
+
+      position:relative;
+      z-index:10001;
+      pointer-events:auto;
     }
 
     .star.active{ color:#facc15; }
@@ -171,6 +186,10 @@
       background:rgba(0,0,0,.4);
       color:var(--text);
       resize:none;
+
+      position:relative;
+      z-index:10000;
+      pointer-events:auto;
     }
 
     .feedback-submit{
@@ -182,9 +201,14 @@
       color:var(--text);
       font-weight:800;
       cursor:pointer;
+
       display:inline-block;
+      position:relative;
+      z-index:10000;
+      pointer-events:auto;
     }
 
+    /* Ensure website button never overlays feedback taps */
     .btn{
       display:block;
       text-align:center;
@@ -196,6 +220,9 @@
       text-decoration:none;
       color:var(--text);
       margin-bottom:12px;
+
+      position:relative;
+      z-index:1;
     }
 
     .footer{
@@ -267,9 +294,12 @@
                   placeholder="Write your feedback..."
                   style="display:none;"></textarea>
 
+        <!-- inline onclick makes submit unbreakable -->
         <button id="feedbackSubmit"
                 class="feedback-submit"
-                style="display:none;">
+                style="display:none;"
+                type="button"
+                onclick="submitFeedback()">
           Submit Feedback
         </button>
       </div>
@@ -284,7 +314,7 @@
   </div>
 
   <script>
-  // Apps Script (working /exec URL)
+  // Apps Script URL (your latest)
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJ_I1l0sLymAi0945LhLLcbwbzwrNf4BDLMKge5Un3QW9R3rmgigfCfzgRELh7dHpEDQ/exec";
 
   const params = new URLSearchParams(window.location.search);
@@ -337,12 +367,12 @@
 
     const url = APPS_SCRIPT_URL + "?" + qs.toString() + "&_ts=" + Date.now();
 
-    // GET beacon (no CORS dependency)
+    // Fire-and-forget GET (no CORS dependency)
     const img = new Image();
     img.src = url;
   }
 
-  // Star click -> record rating only
+  // Star click: highlight + show textarea/button + write rating
   stars.forEach(star => {
     star.addEventListener("click", () => {
       selectedRating = parseInt(star.getAttribute("data-value"), 10) || 0;
@@ -357,10 +387,13 @@
 
       sendToSheet({ rating: selectedRating, feedback: "" });
     });
+
+    // extra mobile reliability (touch)
+    star.addEventListener("touchstart", (e) => { e.preventDefault(); star.click(); }, { passive:false });
   });
 
-  // Submit -> record feedback + replace section
-  feedbackSubmit.addEventListener("click", () => {
+  // Submit handler (called by onclick)
+  window.submitFeedback = function submitFeedback() {
     const txt = (feedbackText.value || "").trim();
     sendToSheet({ rating: selectedRating || 0, feedback: txt });
 
@@ -369,7 +402,7 @@
         Thank you for submitting your feedback!
       </div>
     `;
-  });
+  };
   </script>
 </body>
 </html>
