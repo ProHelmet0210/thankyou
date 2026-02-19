@@ -284,101 +284,85 @@
     </div>
   </div>
 
-  <script>
-  /* ----------------------------
-     Thankyou page (single-scope)
-     - Shows Txn ID
-     - Updates WhatsApp deep link
-     - Feedback: star click auto-writes rating; submit writes feedback
-     - Uses GET beacon (Image) to avoid CORS issues on GitHub Pages
-     ---------------------------- */
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwn0VGTPfPt3c6Wb_TJAEOcgq8lHqtY0wO8bfZcsqxbEnJFdQyvesK4uoIDB2aRI26I0w/exec";
 
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzT9XOLIxeCHfxbhr-sty_GiYXlRfPc_h4u5MM1YV93p0fPkd0Y7qHbI_Q3ckDgK3w/exec";
+const params = new URLSearchParams(window.location.search);
 
-  const params = new URLSearchParams(window.location.search);
-
-  function getParam(keys) {
-    for (const key of keys) {
-      const value = (params.get(key) || "").trim();
-      if (value) return value;
-    }
-    return "";
+function getParam(keys) {
+  for (const key of keys) {
+    const v = (params.get(key) || "").trim();
+    if (v) return v;
   }
+  return "";
+}
 
-  const txnId = getParam([
-    "razorpay_payment_link_id",
-    "plink",
-    "razorpay_payment_id"
-  ]) || "—";
+const txnId = getParam([
+  "razorpay_payment_link_id",
+  "plink",
+  "razorpay_payment_id"
+]) || "—";
 
-  const kioskId = (params.get("kiosk") || "").trim() || "UNKNOWN";
+const kioskId = (params.get("kiosk") || "").trim() || "UNKNOWN";
 
-  // Render Txn ID
-  const txnEl = document.getElementById("txnText");
-  if (txnEl) txnEl.textContent = txnId;
+document.getElementById("txnText").textContent = txnId;
 
-  // WhatsApp deep link with Txn
-  const waLink = document.getElementById("waLink");
-  if (waLink) {
-    const base = "https://wa.me/917207400693?text=";
-    const msg = txnId === "—"
-      ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
-      : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txnId}`;
-    waLink.href = base + encodeURIComponent(msg);
-  }
+const waLink = document.getElementById("waLink");
+if (waLink) {
+  const base = "https://wa.me/917207400693?text=";
+  const msg = txnId === "—"
+    ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
+    : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txnId}`;
+  waLink.href = base + encodeURIComponent(msg);
+}
 
-  // Feedback wiring after DOM is ready
-  document.addEventListener("DOMContentLoaded", () => {
-    let selectedRating = 0;
+let selectedRating = 0;
 
-    const stars = document.querySelectorAll(".star");
-    const feedbackText = document.getElementById("feedbackText");
-    const feedbackSubmit = document.getElementById("feedbackSubmit");
-    const ratingValueEl = document.getElementById("ratingValue");
+const stars = document.querySelectorAll(".star");
+const feedbackText = document.getElementById("feedbackText");
+const feedbackSubmit = document.getElementById("feedbackSubmit");
 
-    function postToSheet({ rating, feedback }) {
-      const qs = new URLSearchParams();
-      qs.set("txn_id", txnId);
-      qs.set("kiosk_id", kioskId);
-      qs.set("rating", String(rating || ""));
-      qs.set("feedback", (feedback || "").trim());
+function sendToSheet(rating, feedback) {
+  const qs = new URLSearchParams({
+    txn_id: txnId,
+    kiosk_id: kioskId,
+    rating: rating,
+    feedback: feedback || ""
+  });
 
-      const url = APPS_SCRIPT_URL + "?" + qs.toString() + "&_ts=" + Date.now();
+  const url = APPS_SCRIPT_URL + "?" + qs.toString();
 
-      console.log("[PROHELMET FEEDBACK] BEACON", url);
+  console.log("Sending:", url);
 
-      const img = new Image();
-      img.src = url; // fire-and-forget
-    }
+  fetch(url)
+    .then(res => res.text())
+    .then(txt => console.log("Response:", txt))
+    .catch(err => console.error("Error:", err));
+}
 
-    stars.forEach(star => {
-      star.addEventListener("click", () => {
-        selectedRating = parseInt(star.getAttribute("data-value"), 10) || 0;
+stars.forEach(star => {
+  star.addEventListener("click", () => {
+    selectedRating = parseInt(star.dataset.value);
 
-        // highlight stars
-        stars.forEach(s => {
-          const v = parseInt(s.getAttribute("data-value"), 10) || 0;
-          s.classList.toggle("active", v <= selectedRating);
-        });
-
-        if (ratingValueEl) ratingValueEl.value = String(selectedRating);
-
-        // show textarea + submit
-        if (feedbackText) feedbackText.style.display = "block";
-        if (feedbackSubmit) feedbackSubmit.style.display = "inline-block";
-
-        // AUTO-RECORD rating-only
-        postToSheet({ rating: selectedRating, feedback: "" });
-      });
+    stars.forEach(s => {
+      s.classList.toggle("active",
+        parseInt(s.dataset.value) <= selectedRating
+      );
     });
 
-    if (feedbackSubmit) {
-      feedbackSubmit.addEventListener("click", () => {
-        const txt = (feedbackText ? feedbackText.value : "").trim();
-        postToSheet({ rating: selectedRating || 0, feedback: txt });
-      });
-    }
+    feedbackText.style.display = "block";
+    feedbackSubmit.style.display = "inline-block";
+
+    sendToSheet(selectedRating, "");
   });
-  </script>
+});
+
+feedbackSubmit.addEventListener("click", () => {
+  const txt = feedbackText.value.trim();
+  sendToSheet(selectedRating || 0, txt);
+});
+</script>
+
+  
 </body>
 </html>
