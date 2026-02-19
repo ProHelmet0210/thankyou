@@ -216,6 +216,32 @@
       font-size:12px;
       color:rgba(233,238,247,.55);
     }
+    /* --- click + layout hardening for feedback section --- */
+.feedback-card{
+  position: relative;
+  z-index: 50;
+}
+
+.feedback-card .stars,
+.feedback-card textarea,
+.feedback-card button{
+  position: relative;
+  z-index: 60;
+  pointer-events: auto;
+}
+
+/* Ensure submit is centered even if styles change */
+.feedback-submit{
+  display: inline-block;   /* keep centered */
+  margin: 10px auto 0 auto;
+}
+
+/* Prevent the Website button area from overlapping/capturing taps */
+.btn{
+  position: relative;
+  z-index: 1;
+}
+
   </style>
 </head>
 
@@ -365,7 +391,7 @@ stars.forEach(star => {
     });
 
     feedbackText.style.display = "block";
-    feedbackSubmit.style.display = "block";
+    feedbackSubmit.style.display = "inline-block";
 
     sendToSheet(selectedRating, "");
   });
