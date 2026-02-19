@@ -359,7 +359,20 @@ stars.forEach(star => {
 
 feedbackSubmit.addEventListener("click", () => {
   const txt = feedbackText.value.trim();
-  sendToSheet(selectedRating || 0, txt);
+  sendToKiosk(selectedRating || 0, txt);
+
+  const card = document.getElementById("feedbackCard");
+  if (card) {
+    card.innerHTML = `
+      <div style="
+        font-weight:900;
+        font-size:18px;
+        padding:20px 10px;
+      ">
+        Thank you for submitting your feedback!
+      </div>
+    `;
+  }
 });
 </script>
 
