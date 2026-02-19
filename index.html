@@ -313,96 +313,83 @@
     </div>
   </div>
 
-  <script>
-  // Apps Script URL (your latest)
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJ_I1l0sLymAi0945LhLLcbwbzwrNf4BDLMKge5Un3QW9R3rmgigfCfzgRELh7dHpEDQ/exec";
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwn0VGTPfPt3c6Wb_TJAEOcgq8lHqtY0wO8bfZcsqxbEnJFdQyvesK4uoIDB2aRI26I0w/exec";
 
-  const params = new URLSearchParams(window.location.search);
+const params = new URLSearchParams(window.location.search);
 
-  function getParam(keys) {
-    for (const key of keys) {
-      const v = (params.get(key) || "").trim();
-      if (v) return v;
-    }
-    return "";
+function getParam(keys) {
+  for (const key of keys) {
+    const v = (params.get(key) || "").trim();
+    if (v) return v;
   }
+  return "";
+}
 
-  const txnId = getParam([
-    "razorpay_payment_link_id",
-    "plink",
-    "razorpay_payment_id"
-  ]) || "—";
+const txnId = getParam([
+  "razorpay_payment_link_id",
+  "plink",
+  "razorpay_payment_id"
+]) || "—";
 
-  const kioskId = (params.get("kiosk") || "").trim() || "UNKNOWN";
+const kioskId = (params.get("kiosk") || "").trim() || "UNKNOWN";
 
-  // Render Txn ID
-  const txnEl = document.getElementById("txnText");
-  if (txnEl) txnEl.textContent = txnId;
+document.getElementById("txnText").textContent = txnId;
 
-  // WhatsApp deep link with Txn
-  const waLink = document.getElementById("waLink");
-  if (waLink) {
-    const base = "https://wa.me/917207400693?text=";
-    const msg = txnId === "—"
-      ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
-      : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txnId}`;
-    waLink.href = base + encodeURIComponent(msg);
-  }
+const waLink = document.getElementById("waLink");
+if (waLink) {
+  const base = "https://wa.me/917207400693?text=";
+  const msg = txnId === "—"
+    ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
+    : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txnId}`;
+  waLink.href = base + encodeURIComponent(msg);
+}
 
-  let selectedRating = 0;
+let selectedRating = 0;
 
-  const stars = document.querySelectorAll(".star");
-  const feedbackText = document.getElementById("feedbackText");
-  const feedbackSubmit = document.getElementById("feedbackSubmit");
-  const feedbackCard = document.getElementById("feedbackCard");
+const stars = document.querySelectorAll(".star");
+const feedbackText = document.getElementById("feedbackText");
+const feedbackSubmit = document.getElementById("feedbackSubmit");
 
-  function sendToSheet({ rating, feedback }) {
-    if (!txnId || txnId === "—") return;
-
-    const qs = new URLSearchParams();
-    qs.set("txn_id", txnId);
-    qs.set("kiosk_id", kioskId);
-    qs.set("rating", String(rating || ""));
-    qs.set("feedback", (feedback || "").trim());
-
-    const url = APPS_SCRIPT_URL + "?" + qs.toString() + "&_ts=" + Date.now();
-
-    // Fire-and-forget GET (no CORS dependency)
-    const img = new Image();
-    img.src = url;
-  }
-
-  // Star click: highlight + show textarea/button + write rating
-  stars.forEach(star => {
-    star.addEventListener("click", () => {
-      selectedRating = parseInt(star.getAttribute("data-value"), 10) || 0;
-
-      stars.forEach(s => {
-        const v = parseInt(s.getAttribute("data-value"), 10) || 0;
-        s.classList.toggle("active", v <= selectedRating);
-      });
-
-      feedbackText.style.display = "block";
-      feedbackSubmit.style.display = "inline-block";
-
-      sendToSheet({ rating: selectedRating, feedback: "" });
-    });
-
-    // extra mobile reliability (touch)
-    star.addEventListener("touchstart", (e) => { e.preventDefault(); star.click(); }, { passive:false });
+function sendToSheet(rating, feedback) {
+  const qs = new URLSearchParams({
+    txn_id: txnId,
+    kiosk_id: kioskId,
+    rating: rating,
+    feedback: feedback || ""
   });
 
-  // Submit handler (called by onclick)
-  window.submitFeedback = function submitFeedback() {
-    const txt = (feedbackText.value || "").trim();
-    sendToSheet({ rating: selectedRating || 0, feedback: txt });
+  const url = APPS_SCRIPT_URL + "?" + qs.toString();
 
-    feedbackCard.innerHTML = `
-      <div style="font-weight:900;font-size:18px;padding:20px 10px;">
-        Thank you for submitting your feedback!
-      </div>
-    `;
-  };
-  </script>
+  console.log("Sending:", url);
+
+  fetch(url)
+    .then(res => res.text())
+    .then(txt => console.log("Response:", txt))
+    .catch(err => console.error("Error:", err));
+}
+
+stars.forEach(star => {
+  star.addEventListener("click", () => {
+    selectedRating = parseInt(star.dataset.value);
+
+    stars.forEach(s => {
+      s.classList.toggle("active",
+        parseInt(s.dataset.value) <= selectedRating
+      );
+    });
+
+    feedbackText.style.display = "block";
+    feedbackSubmit.style.display = "inline-block";
+
+    sendToSheet(selectedRating, "");
+  });
+});
+
+feedbackSubmit.addEventListener("click", () => {
+  const txt = feedbackText.value.trim();
+  sendToSheet(selectedRating || 0, txt);
+});
+</script>
 </body>
 </html>
