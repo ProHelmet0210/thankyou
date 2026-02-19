@@ -128,27 +128,13 @@
     .wa-link:hover{ text-decoration:underline; }
 
     .feedback-card{
-  background:rgba(255,255,255,.04);
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:16px;
-  margin-bottom:16px;
-  text-align:center;
-
-  /* CLICK FIX */
-  position:relative;
-  z-index:5;
-}
-
-.feedback-text{
-  position:relative;
-  z-index:10;
-}
-
-.feedback-submit{
-  position:relative;
-  z-index:10;
-}
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      margin-bottom:16px;
+      text-align:center;
+    }
 
     .feedback-title{ font-weight:900; margin-bottom:4px; }
 
@@ -196,6 +182,7 @@
       color:var(--text);
       font-weight:800;
       cursor:pointer;
+      display:inline-block;
     }
 
     .btn{
@@ -216,32 +203,6 @@
       font-size:12px;
       color:rgba(233,238,247,.55);
     }
-    /* --- click + layout hardening for feedback section --- */
-.feedback-card{
-  position: relative;
-  z-index: 50;
-}
-
-.feedback-card .stars,
-.feedback-card textarea,
-.feedback-card button{
-  position: relative;
-  z-index: 60;
-  pointer-events: auto;
-}
-
-/* Ensure submit is centered even if styles change */
-.feedback-submit{
-  display: inline-block;   /* keep centered */
-  margin: 10px auto 0 auto;
-}
-
-/* Prevent the Website button area from overlapping/capturing taps */
-.btn{
-  position: relative;
-  z-index: 1;
-}
-
   </style>
 </head>
 
@@ -288,8 +249,6 @@
         </div>
       </div>
 
-      <input type="hidden" id="ratingValue" value="0">
-
       <!-- Feedback Section -->
       <div class="feedback-card" id="feedbackCard">
         <div class="feedback-title">We are new. Help us improve.</div>
@@ -324,98 +283,93 @@
     </div>
   </div>
 
-<script>
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJ_I1l0sLymAi0945LhLLcbwbzwrNf4BDLMKge5Un3QW9R3rmgigfCfzgRELh7dHpEDQ/exec";
+  <script>
+  // Apps Script (working /exec URL)
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJ_I1l0sLymAi0945LhLLcbwbzwrNf4BDLMKge5Un3QW9R3rmgigfCfzgRELh7dHpEDQ/exec";
 
-const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(window.location.search);
 
-function getParam(keys) {
-  for (const key of keys) {
-    const v = (params.get(key) || "").trim();
-    if (v) return v;
+  function getParam(keys) {
+    for (const key of keys) {
+      const v = (params.get(key) || "").trim();
+      if (v) return v;
+    }
+    return "";
   }
-  return "";
-}
 
-const txnId = getParam([
-  "razorpay_payment_link_id",
-  "plink",
-  "razorpay_payment_id"
-]) || "—";
+  const txnId = getParam([
+    "razorpay_payment_link_id",
+    "plink",
+    "razorpay_payment_id"
+  ]) || "—";
 
-const kioskId = (params.get("kiosk") || "").trim() || "UNKNOWN";
+  const kioskId = (params.get("kiosk") || "").trim() || "UNKNOWN";
 
-document.getElementById("txnText").textContent = txnId;
+  // Render Txn ID
+  const txnEl = document.getElementById("txnText");
+  if (txnEl) txnEl.textContent = txnId;
 
-const waLink = document.getElementById("waLink");
-if (waLink) {
-  const base = "https://wa.me/917207400693?text=";
-  const msg = txnId === "—"
-    ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
-    : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txnId}`;
-  waLink.href = base + encodeURIComponent(msg);
-}
+  // WhatsApp deep link with Txn
+  const waLink = document.getElementById("waLink");
+  if (waLink) {
+    const base = "https://wa.me/917207400693?text=";
+    const msg = txnId === "—"
+      ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
+      : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txnId}`;
+    waLink.href = base + encodeURIComponent(msg);
+  }
 
-let selectedRating = 0;
+  let selectedRating = 0;
 
-const stars = document.querySelectorAll(".star");
-const feedbackText = document.getElementById("feedbackText");
-const feedbackSubmit = document.getElementById("feedbackSubmit");
+  const stars = document.querySelectorAll(".star");
+  const feedbackText = document.getElementById("feedbackText");
+  const feedbackSubmit = document.getElementById("feedbackSubmit");
+  const feedbackCard = document.getElementById("feedbackCard");
 
-function sendToSheet(rating, feedback) {
-  const qs = new URLSearchParams({
-    txn_id: txnId,
-    kiosk_id: kioskId,
-    rating: rating,
-    feedback: feedback || ""
-  });
+  function sendToSheet({ rating, feedback }) {
+    if (!txnId || txnId === "—") return;
 
-  const url = APPS_SCRIPT_URL + "?" + qs.toString();
+    const qs = new URLSearchParams();
+    qs.set("txn_id", txnId);
+    qs.set("kiosk_id", kioskId);
+    qs.set("rating", String(rating || ""));
+    qs.set("feedback", (feedback || "").trim());
 
-  console.log("Sending:", url);
+    const url = APPS_SCRIPT_URL + "?" + qs.toString() + "&_ts=" + Date.now();
 
-  fetch(url)
-    .then(res => res.text())
-    .then(txt => console.log("Response:", txt))
-    .catch(err => console.error("Error:", err));
-}
+    // GET beacon (no CORS dependency)
+    const img = new Image();
+    img.src = url;
+  }
 
-stars.forEach(star => {
-  star.addEventListener("click", () => {
-    selectedRating = parseInt(star.dataset.value);
+  // Star click -> record rating only
+  stars.forEach(star => {
+    star.addEventListener("click", () => {
+      selectedRating = parseInt(star.getAttribute("data-value"), 10) || 0;
 
-    stars.forEach(s => {
-      s.classList.toggle("active",
-        parseInt(s.dataset.value) <= selectedRating
-      );
+      stars.forEach(s => {
+        const v = parseInt(s.getAttribute("data-value"), 10) || 0;
+        s.classList.toggle("active", v <= selectedRating);
+      });
+
+      feedbackText.style.display = "block";
+      feedbackSubmit.style.display = "inline-block";
+
+      sendToSheet({ rating: selectedRating, feedback: "" });
     });
-
-    feedbackText.style.display = "block";
-    feedbackSubmit.style.display = "inline-block";
-
-    sendToSheet(selectedRating, "");
   });
-});
 
-feedbackSubmit.addEventListener("click", () => {
-  const txt = feedbackText.value.trim();
-  sendToKiosk(selectedRating || 0, txt);
+  // Submit -> record feedback + replace section
+  feedbackSubmit.addEventListener("click", () => {
+    const txt = (feedbackText.value || "").trim();
+    sendToSheet({ rating: selectedRating || 0, feedback: txt });
 
-  const card = document.getElementById("feedbackCard");
-  if (card) {
-    card.innerHTML = `
-      <div style="
-        font-weight:900;
-        font-size:18px;
-        padding:20px 10px;
-      ">
+    feedbackCard.innerHTML = `
+      <div style="font-weight:900;font-size:18px;padding:20px 10px;">
         Thank you for submitting your feedback!
       </div>
     `;
-  }
-});
-</script>
-
-  
+  });
+  </script>
 </body>
 </html>
