@@ -386,21 +386,11 @@ stars.forEach(star => {
   });
 });
 
-    // extra mobile reliability (touch)
-    star.addEventListener("touchstart", (e) => { e.preventDefault(); star.click(); }, { passive:false });
-  });
+feedbackSubmit.addEventListener("click", () => {
+  const txt = feedbackText.value.trim();
+  sendToSheet(selectedRating || 0, txt);
+});
 
-  // Submit handler (called by onclick)
-  window.submitFeedback = function submitFeedback() {
-    const txt = (feedbackText.value || "").trim();
-    sendToSheet({ rating: selectedRating || 0, feedback: txt });
-
-    feedbackCard.innerHTML = `
-      <div style="font-weight:900;font-size:18px;padding:20px 10px;">
-        Thank you for submitting your feedback!
-      </div>
-    `;
-  };
 </script>
 </body>
 </html>
