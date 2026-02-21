@@ -128,9 +128,7 @@
     .wa-link{ color:#25D366; text-decoration:none; font-weight:900; }
     .wa-link:hover{ text-decoration:underline; }
 
-    /* ---------------------------
-       CRITICAL CLICK FIXES
-       --------------------------- */
+    /* Click reliability */
     .feedback-card{
       background:rgba(255,255,255,.04);
       border:1px solid var(--line);
@@ -138,9 +136,8 @@
       padding:16px;
       margin-bottom:16px;
       text-align:center;
-
       position:relative;
-      z-index:9999;           /* keep above everything */
+      z-index:9999;
       pointer-events:auto;
     }
 
@@ -156,7 +153,6 @@
       justify-content:center;
       gap:8px;
       font-size:28px;
-
       position:relative;
       z-index:10000;
       pointer-events:auto;
@@ -169,7 +165,6 @@
       -webkit-tap-highlight-color: transparent;
       color:#555;
       transition:color .2s ease;
-
       position:relative;
       z-index:10001;
       pointer-events:auto;
@@ -186,7 +181,6 @@
       background:rgba(0,0,0,.4);
       color:var(--text);
       resize:none;
-
       position:relative;
       z-index:10000;
       pointer-events:auto;
@@ -201,14 +195,12 @@
       color:var(--text);
       font-weight:800;
       cursor:pointer;
-
       display:inline-block;
       position:relative;
       z-index:10000;
       pointer-events:auto;
     }
 
-    /* Ensure website button never overlays feedback taps */
     .btn{
       display:block;
       text-align:center;
@@ -220,7 +212,6 @@
       text-decoration:none;
       color:var(--text);
       margin-bottom:12px;
-
       position:relative;
       z-index:1;
     }
@@ -294,7 +285,6 @@
                   placeholder="Write your feedback..."
                   style="display:none;"></textarea>
 
-        <!-- inline onclick makes submit unbreakable -->
         <button id="feedbackSubmit"
                 class="feedback-submit"
                 style="display:none;"
@@ -314,83 +304,101 @@
   </div>
 
 <script>
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJ_I1l0sLymAi0945LhLLcbwbzwrNf4BDLMKge5Un3QW9R3rmgigfCfzgRELh7dHpEDQ/exec";
+  // ✅ your Apps Script URL
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJ_I1l0sLymAi0945LhLLcbwbzwrNf4BDLMKge5Un3QW9R3rmgigfCfzgRELh7dHpEDQ/exec";
 
-const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(window.location.search);
 
-function getParam(keys) {
-  for (const key of keys) {
-    const v = (params.get(key) || "").trim();
-    if (v) return v;
+  function getParam(keys) {
+    for (const key of keys) {
+      const v = (params.get(key) || "").trim();
+      if (v) return v;
+    }
+    return "";
   }
-  return "";
-}
 
-const txnId = getParam([
-  "razorpay_payment_link_id",
-  "plink",
-  "razorpay_payment_id"
-]) || "—";
+  const txnId = getParam([
+    "razorpay_payment_link_id",
+    "plink",
+    "razorpay_payment_id"
+  ]) || "—";
 
-const kioskId = (params.get("kiosk") || "").trim() || "UNKNOWN";
+  const kioskId = (params.get("kiosk") || "").trim() || "UNKNOWN";
 
-document.getElementById("txnText").textContent = txnId;
+  // Render Txn ID
+  const txnEl = document.getElementById("txnText");
+  if (txnEl) txnEl.textContent = txnId;
 
-const waLink = document.getElementById("waLink");
-if (waLink) {
-  const base = "https://wa.me/917207400693?text=";
-  const msg = txnId === "—"
-    ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
-    : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txnId}`;
-  waLink.href = base + encodeURIComponent(msg);
-}
+  // WhatsApp deep link with Txn
+  const waLink = document.getElementById("waLink");
+  if (waLink) {
+    const base = "https://wa.me/917207400693?text=";
+    const msg = txnId === "—"
+      ? "Hi ProHelmet, I need help with my payment/cleaning cycle."
+      : `Hi ProHelmet, I need help with my payment/cleaning cycle. Txn: ${txnId}`;
+    waLink.href = base + encodeURIComponent(msg);
+  }
 
-let selectedRating = 0;
+  let selectedRating = 0;
 
-const stars = document.querySelectorAll(".star");
-const feedbackText = document.getElementById("feedbackText");
-const feedbackSubmit = document.getElementById("feedbackSubmit");
+  const stars = document.querySelectorAll(".star");
+  const feedbackText = document.getElementById("feedbackText");
+  const feedbackSubmit = document.getElementById("feedbackSubmit");
+  const feedbackCard = document.getElementById("feedbackCard");
 
-function sendToSheet(rating, feedback) {
-  const qs = new URLSearchParams({
-    txn_id: txnId,
-    kiosk_id: kioskId,
-    rating: rating,
-    feedback: feedback || ""
-  });
+  // ✅ Use FETCH (from your first code) so rating + comment reliably updates sheet
+  function sendToSheet(rating, feedback) {
+    if (!txnId || txnId === "—") return Promise.resolve();
 
-  const url = APPS_SCRIPT_URL + "?" + qs.toString();
-
-  console.log("Sending:", url);
-
-  fetch(url)
-    .then(res => res.text())
-    .then(txt => console.log("Response:", txt))
-    .catch(err => console.error("Error:", err));
-}
-
-stars.forEach(star => {
-  star.addEventListener("click", () => {
-    selectedRating = parseInt(star.dataset.value);
-
-    stars.forEach(s => {
-      s.classList.toggle("active",
-        parseInt(s.dataset.value) <= selectedRating
-      );
+    const qs = new URLSearchParams({
+      txn_id: txnId,
+      kiosk_id: kioskId,
+      rating: String(rating || ""),
+      feedback: (feedback || "")
     });
 
-    feedbackText.style.display = "block";
-    feedbackSubmit.style.display = "inline-block";
+    const url = APPS_SCRIPT_URL + "?" + qs.toString() + "&_ts=" + Date.now();
 
-    sendToSheet(selectedRating, "");
+    return fetch(url)
+      .then(res => res.text())
+      .catch(() => "");
+  }
+
+  // Star click -> highlight + show input + auto record rating
+  stars.forEach(star => {
+    star.addEventListener("click", () => {
+      selectedRating = parseInt(star.dataset.value, 10) || 0;
+
+      stars.forEach(s => {
+        s.classList.toggle("active", (parseInt(s.dataset.value, 10) || 0) <= selectedRating);
+      });
+
+      feedbackText.style.display = "block";
+      feedbackSubmit.style.display = "inline-block";
+
+      sendToSheet(selectedRating, "");
+    });
+
+    // mobile tap reliability
+    star.addEventListener("touchstart", (e) => { e.preventDefault(); star.click(); }, { passive:false });
   });
-});
 
-feedbackSubmit.addEventListener("click", () => {
-  const txt = feedbackText.value.trim();
-  sendToSheet(selectedRating || 0, txt);
-});
+  // ✅ Submit -> send comment to sheet AND then switch UI to Thank you section
+  window.submitFeedback = function submitFeedback() {
+    const txt = (feedbackText.value || "").trim();
 
+    // 1) send comment (same txn row)
+    sendToSheet(selectedRating || 0, txt).finally(() => {
+      // 2) switch UI (do after request is fired)
+      feedbackCard.innerHTML = `
+        <div style="font-weight:900;font-size:18px;padding:20px 10px;">
+          Thank you for submitting your feedback!
+        </div>
+      `;
+    });
+  };
 </script>
+
 </body>
 </html>
+
