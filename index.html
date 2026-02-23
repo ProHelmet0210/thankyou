@@ -323,7 +323,25 @@
     "razorpay_payment_id"
   ]) || "—";
 
-  const kioskId = (params.get("kiosk") || "").trim() || "UNKNOWN";
+  // ✅ Kiosk ID extraction (scalable):
+  // Priority:
+  // 1) kiosk_id param
+  // 2) kiosk param
+  // 3) parse from razorpay_payment_link_reference_id (format: prohelmet|KIOSK_ID|anything)
+  function extractKioskId() {
+    const direct = getParam(["kiosk_id", "kiosk"]);
+    if (direct) return direct;
+
+    const ref = (params.get("razorpay_payment_link_reference_id") || "").trim();
+    if (ref) {
+      // expected format: prohelmet|PH-IND-HYD-A101|1771834196
+      const parts = ref.split("|").map(x => (x || "").trim()).filter(Boolean);
+      if (parts.length >= 2) return parts[1]; // the kiosk id
+    }
+    return "UNKNOWN";
+  }
+
+  const kioskId = extractKioskId();
 
   // Render Txn ID
   const txnEl = document.getElementById("txnText");
@@ -346,7 +364,6 @@
   const feedbackSubmit = document.getElementById("feedbackSubmit");
   const feedbackCard = document.getElementById("feedbackCard");
 
-  // ✅ Use FETCH (from your first code) so rating + comment reliably updates sheet
   function sendToSheet(rating, feedback) {
     if (!txnId || txnId === "—") return Promise.resolve();
 
@@ -379,17 +396,14 @@
       sendToSheet(selectedRating, "");
     });
 
-    // mobile tap reliability
     star.addEventListener("touchstart", (e) => { e.preventDefault(); star.click(); }, { passive:false });
   });
 
-  // ✅ Submit -> send comment to sheet AND then switch UI to Thank you section
+  // Submit -> send comment then switch UI
   window.submitFeedback = function submitFeedback() {
     const txt = (feedbackText.value || "").trim();
 
-    // 1) send comment (same txn row)
     sendToSheet(selectedRating || 0, txt).finally(() => {
-      // 2) switch UI (do after request is fired)
       feedbackCard.innerHTML = `
         <div style="font-weight:900;font-size:18px;padding:20px 10px;">
           Thank you for submitting your feedback!
